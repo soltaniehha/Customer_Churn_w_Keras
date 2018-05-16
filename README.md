@@ -8,31 +8,30 @@ Solving the Customer Churn Problem with Multilayer Perceptron Neural Networks
 * 20 varibales plus “Churn” column, which is our target variable
 
 ## PREREQUISITES/INSTALLATIONS
-In R:
+Install the following packages in R:
 
 ```{r}
 pkgs <- c("keras", "tidyquant", "rsample", "recipes", "yardstick", "corrr", "ggplot2", "caret", "devtools")
 install.packages(pkgs)
 ```
 
-To install lime, magick should be installed as follows
-In terminal: ```export PGK_CONFIG_PATH=/opt/local/lib/pkgconfig```
+To install lime, magick should be installed as follows:
 
-In R:
+In terminal execute ```export PGK_CONFIG_PATH=/opt/local/lib/pkgconfig``` and in R:
 
-```{}
+```{r}
 devtools::install_github("ropensci/magick",force=TRUE)
 install.packages('lime')
 ```
 
-Install Keras if you have not installed before
+Install Keras if you have not installed it before:
 
 ```{r}
 library(keras)
 install_keras()
 ```
 
-# To check to see if keras was installed do the following:
+For further instructions please see <https://keras.rstudio.com>. To check to see if keras was installed successfully:
 
 ```{r}
 is_keras_available() # if the response was TRUE you're all good to go.
