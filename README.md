@@ -9,6 +9,7 @@ Problem to solve: identify customers who are at risk of leaving. “Churn” col
 
 ### PREREQUISITES/INSTALLATIONS
 In R:
+
 ```pkgs <- c("keras", "tidyquant", "rsample", "recipes", "yardstick", "corrr", "ggplot2", "caret", "devtools")
 install.packages(pkgs)```
 
