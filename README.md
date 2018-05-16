@@ -34,6 +34,8 @@ install_keras()
 
 # To check to see if keras was installed do the following:
 
-```is_keras_available() # if the response was TRUE you're all good to go.```
+```{r}
+is_keras_available() # if the response was TRUE you're all good to go.
+```
 
 
