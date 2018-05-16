@@ -16,17 +16,24 @@ install.packages(pkgs)
 ```
 
 To install lime, magick should be installed as follows
-In terminal:
-```export PGK_CONFIG_PATH=/opt/local/lib/pkgconfig```
+In terminal: ```export PGK_CONFIG_PATH=/opt/local/lib/pkgconfig```
+
 In R:
-```devtools::install_github("ropensci/magick",force=TRUE)
-install.packages('lime')```
+
+```{}
+devtools::install_github("ropensci/magick",force=TRUE)
+install.packages('lime')
+```
 
 Install Keras if you have not installed before
-```library(keras)
-install_keras()```
+
+```{r}
+library(keras)
+install_keras()
+```
 
 # To check to see if keras was installed do the following:
+
 ```is_keras_available() # if the response was TRUE you're all good to go.```
 
 
