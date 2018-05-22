@@ -1,4 +1,4 @@
-# Parts of this code was borrowed from: https://www.r-bloggers.com/customer-analytics-using-deep-learning-with-keras-to-predict-customer-churn/
+# Parts of this code was borrowed CREDIT: https://www.r-bloggers.com/customer-analytics-using-deep-learning-with-keras-to-predict-customer-churn/
 
 # Install the following packages in R:
   
@@ -321,7 +321,7 @@ corrr_analysis %>%
   theme_tq() +
   labs(title = "Churn Correlation Analysis",
        subtitle = "Positive Correlations (contribute to churn), Negative Correlations (prevent churn)",
-       y = "Feature Importance")
+       y = "Features")
 
 
 # We need to implement K-Fold Cross Validation and Hyper Parameter Tuning if we want a best-in-class model.
