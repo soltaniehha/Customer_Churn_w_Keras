@@ -1,13 +1,13 @@
 # Customer Churn with Keras in R
-Solving the Customer Churn Problem with Multilayer Perceptron Neural Networks
+Using Customer Behavior Data to Improve Customer Retention with Multilayer Perceptron Neural Networks
 
 **Problem to solve:** identify customers who are at risk of leaving
 
-**Dataset:** IBM WATSON Telco Dataset
+**Dataset:** [IBM WATSON Telco Dataset](https://www.ibm.com/communities/analytics/watson-analytics-blog/predictive-insights-in-the-telco-customer-churn-data-set/)
 * 7,043 rows
 * 20 varibales plus “Churn” column, which is our target variable
 
-## PREREQUISITES/INSTALLATIONS
+## PREREQUISITES/INSTALLATION
 Install the following packages in R:
 
 ```{r}
