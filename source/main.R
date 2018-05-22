@@ -37,6 +37,9 @@ nrow(raw_churn_data_df)
 glimpse(raw_churn_data_df)
 summary(raw_churn_data_df)
 
+# Average churn rate is 26.5%
+sum(raw_churn_data_df$Churn=='Yes')/nrow(raw_churn_data_df)
+
 length(unique(raw_churn_data_df$customerID)) # 7043
 # Each customer has a unique customerID, this field doesn't include any useful information
 # for our prediction purposes
@@ -62,7 +65,7 @@ summary(churn_data_df)
 # SPLIT INTO TRAIN/TEST SETS
 
 # Split test/training sets
-set.seed(300)
+set.seed(1)
 train_test_split <- rsample::initial_split(churn_data_df, prop = 0.75)
 
 # Retrieve train and test sets
@@ -131,7 +134,7 @@ model_keras <- keras::keras_model_sequential() # Keras Model composed of a linea
 model_keras %>% 
   # First hidden layer
   layer_dense(
-    units              = 10, 
+    units              = 16, 
     kernel_initializer = "uniform", # random uniform
     activation         = "relu", 
     input_shape        = ncol(x_train_df)) %>%  # Defining the shape of the input to the 1st hidden layer
@@ -139,7 +142,7 @@ model_keras %>%
   layer_dropout(rate = 0.1) %>%
   # Second hidden layer
   layer_dense(
-    units              = 6, 
+    units              = 12, 
     kernel_initializer = "uniform", # random uniform
     activation         = "relu") %>% 
   # Dropout to prevent overfitting
@@ -228,4 +231,97 @@ tibble(
 # F1-Statistic
 estimates_keras_tbl %>% f_meas(truth, estimate, beta = 1)
 
+# ----------------------------------------------------------------------------------
+# EXPLAIN THE MODEL WITH LIME
+# ----------------------------------------------------------------------------------
 
+# it’s not setup out-of-the-box to work with keras
+# with a few functions we can get everything working properly
+# We’ll need to make two custom functions:
+#   model_type: Used to tell lime what type of model we are dealing with. It could be classification, regression, survival, etc.
+#   predict_model: Used to allow lime to perform predictions that its algorithm can interpret.
+# We can identify the class of our model object
+class(model_keras)
+
+# Setup lime::model_type() function for keras
+# The function simply returns “classification”, which tells LIME we are classifying.
+model_type.keras.models.Sequential <- function(x, ...) {
+  return("classification")
+}
+
+# Setup lime::predict_model() function for keras
+predict_model.keras.models.Sequential <- function(x, newdata, type, ...) {
+  pred <- predict_proba(object = x, x = as.matrix(newdata))
+  return(data.frame(Yes = pred, No = 1 - pred))
+}
+
+# Test our predict_model() function
+predict_model(x = model_keras, newdata = x_test_df, type = 'raw') %>%
+  tibble::as_tibble()
+
+# Run lime() on training set
+explainer <- lime::lime(
+  x              = x_train_df, 
+  model          = model_keras, 
+  bin_continuous = FALSE)
+
+# Run explain() on explainer
+explanation <- lime::explain(
+  x_test_df[1:10,], 
+  explainer    = explainer, 
+  n_labels     = 1, 
+  n_features   = 4,
+  kernel_width = 0.5)
+
+#View(cbind(y_test_vec[1:10],x_test_df[1:10,]))
+#View(test_df[1:10,])
+
+# FEATURE IMPORTANCE VISUALIZATION
+plot_features(explanation) +
+  labs(title = "LIME Feature Importance Visualization",
+       subtitle = "Hold Out (Test) Set, First 10 Cases Shown")
+
+# LIME Feature Importance Heatmap
+plot_explanations(explanation) +
+  labs(title = "LIME Feature Importance Heatmap",
+       subtitle = "Hold Out (Test) Set, First 10 Cases Shown")
+
+# CHECK EXPLANATIONS WITH CORRELATION ANALYSIS
+# Feature correlations to Churn
+corrr_analysis <- x_train_df %>%
+  dplyr::mutate(Churn = y_train_vec) %>%
+  corrr::correlate() %>%
+  corrr::focus(Churn) %>%
+  dplyr::rename(feature = rowname) %>%
+  dplyr::arrange(abs(Churn)) %>%
+  dplyr::mutate(feature = as_factor(feature)) 
+corrr_analysis
+
+# Correlation visualization
+corrr_analysis %>%
+  ggplot(aes(x = Churn, y = fct_reorder(feature, desc(Churn)))) +
+  geom_point() +
+  # Positive Correlations - Contribute to churn
+  geom_segment(aes(xend = 0, yend = feature), 
+               color = palette_light()[[2]], 
+               data = corrr_analysis %>% filter(Churn > 0)) +
+  geom_point(color = palette_light()[[2]], 
+             data = corrr_analysis %>% filter(Churn > 0)) +
+  # Negative Correlations - Prevent churn
+  geom_segment(aes(xend = 0, yend = feature), 
+               color = palette_light()[[1]], 
+               data = corrr_analysis %>% filter(Churn < 0)) +
+  geom_point(color = palette_light()[[1]], 
+             data = corrr_analysis %>% filter(Churn < 0)) +
+  # Vertical lines
+  geom_vline(xintercept = 0, color = palette_light()[[5]], size = 1, linetype = 2) +
+  geom_vline(xintercept = -0.25, color = palette_light()[[5]], size = 1, linetype = 2) +
+  geom_vline(xintercept = 0.25, color = palette_light()[[5]], size = 1, linetype = 2) +
+  # Aesthetics
+  theme_tq() +
+  labs(title = "Churn Correlation Analysis",
+       subtitle = "Positive Correlations (contribute to churn), Negative Correlations (prevent churn)",
+       y = "Feature Importance")
+
+
+# We need to implement K-Fold Cross Validation and Hyper Parameter Tuning if we want a best-in-class model.
